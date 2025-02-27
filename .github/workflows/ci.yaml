@@ -1,0 +1,22 @@
+name: ci-sonarcloud
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  check-application:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ["1.15"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go test -coverprofile=coverage.out
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
