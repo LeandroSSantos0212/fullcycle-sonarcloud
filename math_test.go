@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 )
@@ -16,13 +17,20 @@ func TestSoma(t *testing.T) {
 
 func TestMainFunction(t *testing.T) {
 	// Captura a saída padrão
-	var buf bytes.Buffer
+	r, w, _ := os.Pipe()
 	stdout := os.Stdout
-	os.Stdout = &buf
-	defer func() { os.Stdout = stdout }()
+	os.Stdout = w
 
 	// Chama a função main
 	main()
+
+	// Fecha o writer e restaura a saída padrão
+	w.Close()
+	os.Stdout = stdout
+
+	// Lê a saída capturada
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
 
 	// Verifica a saída
 	expected := fmt.Sprintln(soma(111, 10))
